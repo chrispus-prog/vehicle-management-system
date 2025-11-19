@@ -1,0 +1,152 @@
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
+// Global variable
+string companyName = "Group 11 Car Dealership Ltd";
+
+//=======TASK 1=======
+class Vehicle {
+public:
+    string brand;
+    string model;
+    static int count; // static variable
+
+    Vehicle(string b, string m) {
+        brand = b;
+        model = m;
+        count++;
+    }
+
+    virtual void displayInfo() {
+        cout << "Brand: " << brand << ", Model: " << model << endl;
+    }
+
+    //======TASK 4======
+    void updateModel() {
+        string newModel;
+        cout << "Enter new model: ";
+        cin >> newModel;
+        model = newModel;
+    }
+
+    // Task 5: Write vehicle info to file
+    virtual void writeToFile(ofstream &out) {
+        out << "Brand: " << brand << ", Model: " << model << endl;
+    }
+};
+
+int Vehicle::count = 0;
+
+//=========TASK 2=========//
+// Derived class Car
+class Car : public Vehicle {
+private:
+    int seats;
+
+public:
+    Car(string b, string m, int s) : Vehicle(b, m) {
+        if (s < 0) throw invalid_argument("Invalid number of seats!");
+        seats = s;
+    }
+
+    void displayInfo() override {
+        cout << "\nCar Brand: " << brand 
+             << "\n Model: " << model 
+             << "\n Seats: " << seats << endl;
+    }
+
+    void writeToFile(ofstream &out) override {
+        out << "\nCar Brand: " << brand 
+            << "\n Model: " << model 
+            << "\n Seats: " << seats << endl;
+    }
+};
+
+// Derived class Motorbike
+class Motorbike : public Vehicle {
+private:
+    int engineCapacity;
+
+public:
+    Motorbike(string b, string m, int ec) : Vehicle(b, m) {
+        if (ec < 0) throw invalid_argument("Invalid engine capacity!");
+        engineCapacity = ec;
+    }
+
+    void displayInfo() override {
+        cout << "\nMotorbike Brand: " << brand 
+             << "\n Model: " << model 
+             << "\n Engine Capacity: " << engineCapacity << "cc" << endl;
+    }
+
+    void writeToFile(ofstream &out) override {
+        out << "\nMotorbike Brand: " << brand 
+            << "\n Model: " << model 
+            << "\n Engine Capacity: " << engineCapacity << "cc" << endl;
+    }
+};
+
+//=========TASK 3 & 5=========//
+int main() {
+    cout << "Company: " << companyName << endl;
+
+    Vehicle* vehicles[4];
+
+    try {
+        // Create objects
+        vehicles[0] = new Car("Toyota", "Hiace", 5);
+        vehicles[1] = new Car("Honda", "Civic", 5);
+        vehicles[2] = new Motorbike("Yamaha", "R1", 1000);
+        vehicles[3] = new Motorbike("Kawasaki", "Ninja", 650);
+
+        cout << "\nTotal Vehicles Created = " << Vehicle::count << endl;
+
+        // Display all vehicle info using polymorphism
+        cout << "\n--- Vehicle Info ---\n";
+        for (int i = 0; i < 4; i++) {
+            vehicles[i]->displayInfo();
+        }
+
+        // Write all vehicle details to file
+        ofstream outFile("vehicles.txt");
+        if (!outFile) throw runtime_error("Cannot open file for writing!");
+
+        outFile << "Vehicle Management System\n";
+        outFile << "By Group 11: All Rights Reserved\n\n";
+
+        for (int i = 0; i < 4; i++) {
+            vehicles[i]->writeToFile(outFile);
+        }
+
+        outFile.close();
+        cout << "\nData written to vehicles.txt successfully.\n";
+
+        // Read details back from the file
+        ifstream inFile("vehicles.txt");
+        if (!inFile) throw runtime_error("Cannot open file for reading!");
+
+        cout << "\n--- Vehicle Details from File ---\n";
+        string line;
+        while (getline(inFile, line)) {
+            cout << line << endl;
+        }
+        inFile.close();
+        //======TASK 6==========//
+
+    } catch (invalid_argument &e) {
+        cout << "Error: " << e.what() << endl;
+    } catch (runtime_error &e) {
+        cout << "File Error: " << e.what() << endl;
+    } catch (...) {
+        cout << "An unknown error occurred!" << endl;
+    }
+
+    // Free dynamically allocated memory
+    for (int i = 0; i < 4; i++) {
+        delete vehicles[i];
+    }
+
+    return 0;
+}
